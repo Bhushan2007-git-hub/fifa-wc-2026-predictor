@@ -97,7 +97,7 @@ fifa_predictor/
 ### Option 1 — Docker Compose (recommended)
 
 ```bash
-git clone https://github.com/your-username/fifa-wc-2026-predictor.git
+git clone https://github.com/Bhushan2007-git-hub/fifa-wc-2026-predictor.git
 cd fifa-wc-2026-predictor
 docker-compose up --build
 ```
