@@ -190,9 +190,13 @@ Frontend runs at http://localhost:3000
 
 | File | Description | Rows |
 |---|---|---|
-| `matches_1930_2022.csv` | All World Cup match results with scores, goals, cards, subs | 964 |
-| `fifa_ranking_2022-10-06.csv` | FIFA world rankings as of Oct 2022 | 211 |
+| `international_results.csv` | All international match results 1872–2026 | 49,306 |
+| `matches_1930_2022.csv` | World Cup matches with xG, penalties, cards, subs | 964 |
+| `goalscorers.csv` | Individual goal events with penalty and own goal flags | 47,601 |
+| `shootouts.csv` | Penalty shootout results per match | 675 |
+| `former_names.csv` | Country name changes (e.g. West Germany → Germany) | 36 |
 | `world_cup.csv` | Tournament-level summary (champion, runner-up, attendance) | 22 |
+| `fifa_ranking_2026.csv` | FIFA world rankings as of April 2026 | 75 |
 
 ---
 
@@ -213,7 +217,8 @@ Frontend runs at http://localhost:3000
 
 ## 📝 Notes
 
-- The model is trained on 1930–2022 World Cup matches only (not friendlies or qualifiers), making it specifically calibrated for tournament conditions.
-- Elo ratings are computed incrementally in chronological order, so every prediction uses only information available before that match.
-- The 2026 group draw used here is illustrative; swap `GROUPS_2026` in `simulator.py` once the official draw is made (Dec 2025).
-- Model accuracy on 5-fold CV is typically 55–60% for 3-class prediction (home win / draw / away win), which is competitive for football prediction tasks.
+- The model is trained on 32,000+ international matches (1990–2026), with Elo computed from the full 49,306 match history (1872–2026).
+- Elo ratings are computed incrementally in chronological order, then overridden with current verified values from eloratings.net (June 2026).
+- The 2026 group draw reflects the official December 2025 draw. Update `GROUPS_2026` in `simulator.py` if needed.
+- Model accuracy on 3-fold CV is typically 55–60% for 3-class prediction (home win / draw / away win), which is competitive for football prediction tasks.
+- Shootout win rates from `shootouts.csv` are used to distribute draw probability in knockout matches, making penalty predictions team-specific.
