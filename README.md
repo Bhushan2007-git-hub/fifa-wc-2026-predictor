@@ -1,0 +1,219 @@
+# 🏆 FIFA World Cup 2026 Predictor
+
+An ML-powered full-stack application that predicts all FIFA World Cup 2026 match outcomes, group standings, and ultimately the champion — with every metric expressed as a percentage.
+
+---
+
+## 📸 Features
+
+| Feature | Description |
+|---|---|
+| **Match Predictor** | Win/Draw/Loss % for any two teams using trained ensemble model |
+| **Group Stage** | All 6 matches per group predicted with probabilities |
+| **Tournament Simulator** | Monte-Carlo simulation of the full 48-team bracket (up to 5000 runs) |
+| **Champion Odds** | % probability for each team to win the tournament |
+| **Finalist/Semi-Finalist Odds** | Breakdown of how far each team is expected to go |
+| **Team Stats** | Historical World Cup record + Elo + FIFA ranking |
+
+---
+
+## 🧠 ML Architecture
+
+### Algorithms
+- **Random Forest** (300 trees, depth 8)
+- **Gradient Boosting** (200 estimators, LR 0.05)
+- **Logistic Regression** (L2 regularisation)
+- Combined as a **Soft Voting Ensemble** (weights 3:3:1)
+- Output calibrated using **Isotonic Regression** (`CalibratedClassifierCV`)
+
+### Features Used
+| Feature | Source |
+|---|---|
+| Elo rating differential | Computed from all 964 WC matches (1930–2022) |
+| FIFA ranking & points | `fifa_ranking_2022-10-06.csv` |
+| Historical win/draw/loss rates | `matches_1930_2022.csv` |
+| Average goals scored / conceded | Historical match data |
+| Goal difference average | Historical match data |
+| Knockout stage flag | Match metadata |
+| Year (time trend) | Match date |
+
+### Simulation Method
+The tournament simulator runs **Monte-Carlo sampling** (default: 1,000 full tournaments):
+1. Group stage — all 6 matches per group simulated; teams ranked by points → GD → GF
+2. Best 8 third-place teams qualify (48-team 2026 format = 32 knockout round)
+3. Knockout rounds — no draws; penalty shootout probability folded into win/loss odds
+4. Results aggregated → championship %, finalist %, semi-finalist %
+
+---
+
+## 🗂️ Project Structure
+
+```
+fifa_predictor/
+├── backend/
+│   ├── app/
+│   │   ├── main.py              # FastAPI application
+│   │   ├── api/
+│   │   │   └── routes.py        # All API endpoints
+│   │   └── ml/
+│   │       ├── model.py         # Elo engine + feature engineering + training
+│   │       └── simulator.py     # Tournament bracket + Monte-Carlo simulator
+│   ├── data/                    # CSV datasets (gitignored model cache)
+│   ├── scripts/
+│   │   ├── train_model.py       # Standalone training script
+│   │   └── simulate_tournament.py  # CLI tournament runner
+│   ├── Dockerfile
+│   ├── requirements.txt
+│   └── README.md
+├── frontend/
+│   ├── src/
+│   │   ├── App.jsx
+│   │   ├── index.css
+│   │   ├── main.jsx
+│   │   ├── components/
+│   │   │   ├── Navbar.jsx
+│   │   │   ├── MatchPredictor.jsx
+│   │   │   ├── GroupPredictor.jsx
+│   │   │   ├── TournamentSimulator.jsx
+│   │   │   ├── TeamStats.jsx
+│   │   │   └── ProbabilityBar.jsx
+│   │   └── services/
+│   │       └── api.js           # Axios-style fetch wrapper
+│   ├── Dockerfile
+│   ├── nginx.conf
+│   ├── package.json
+│   └── vite.config.js
+├── docker-compose.yml
+└── README.md
+```
+
+---
+
+## 🚀 Quick Start
+
+### Option 1 — Docker Compose (recommended)
+
+```bash
+git clone https://github.com/your-username/fifa-wc-2026-predictor.git
+cd fifa-wc-2026-predictor
+docker-compose up --build
+```
+
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:8000
+- API Docs (Swagger): http://localhost:8000/docs
+
+---
+
+### Option 2 — Local Development
+
+#### Backend
+
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate      # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+
+# Optional: pre-train the model
+python scripts/train_model.py
+
+# Start server
+uvicorn app.main:app --reload --port 8000
+```
+
+#### Frontend
+
+```bash
+cd frontend
+npm install
+cp .env.example .env
+npm run dev
+```
+
+Frontend runs at http://localhost:3000
+
+---
+
+## 📡 API Reference
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/api/v1/health` | Health check |
+| `GET` | `/api/v1/teams` | All teams with Elo + FIFA rank |
+| `GET` | `/api/v1/teams/{name}/stats` | Team historical WC stats |
+| `GET` | `/api/v1/groups` | 2026 group draw |
+| `GET` | `/api/v1/predict/group/{A-L}` | All match predictions for a group |
+| `POST` | `/api/v1/predict/match` | Single match prediction |
+| `POST` | `/api/v1/simulate/tournament` | Run Monte-Carlo tournament simulation |
+| `GET` | `/api/v1/simulate/tournament/cached` | Get last simulation result |
+
+### POST `/api/v1/predict/match`
+```json
+{
+  "home_team": "Brazil",
+  "away_team": "France",
+  "is_knockout": false
+}
+```
+
+**Response:**
+```json
+{
+  "home_team": "Brazil",
+  "away_team": "France",
+  "home_win_probability": 42.3,
+  "draw_probability": 24.1,
+  "away_win_probability": 33.6,
+  "predicted_winner": "Brazil",
+  "home_elo": 2089.4,
+  "away_elo": 2041.7
+}
+```
+
+### POST `/api/v1/simulate/tournament`
+```json
+{ "simulations": 1000 }
+```
+
+**Response includes:**
+- `champion_probabilities` — `{ "Brazil": 18.4, "France": 14.2, ... }`
+- `finalist_probabilities` — % chance of reaching the final
+- `semifinalist_probabilities` — % chance of reaching semi-finals
+- `top_champions` — sorted list of top 16 contenders
+- `group_stage_results` — predicted group standings
+- `sample_bracket` — full bracket from simulation run #1
+
+---
+
+## 📊 Datasets
+
+| File | Description | Rows |
+|---|---|---|
+| `matches_1930_2022.csv` | All World Cup match results with scores, goals, cards, subs | 964 |
+| `fifa_ranking_2022-10-06.csv` | FIFA world rankings as of Oct 2022 | 211 |
+| `world_cup.csv` | Tournament-level summary (champion, runner-up, attendance) | 22 |
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Backend API | FastAPI + Uvicorn |
+| ML | scikit-learn (RF + GB + LR ensemble) |
+| Data | pandas, numpy |
+| Model persistence | joblib |
+| Frontend | React 18 + Vite |
+| Styling | Pure CSS (no framework) |
+| Containerisation | Docker + Docker Compose |
+| Reverse proxy | Nginx |
+
+---
+
+## 📝 Notes
+
+- The model is trained on 1930–2022 World Cup matches only (not friendlies or qualifiers), making it specifically calibrated for tournament conditions.
+- Elo ratings are computed incrementally in chronological order, so every prediction uses only information available before that match.
+- The 2026 group draw used here is illustrative; swap `GROUPS_2026` in `simulator.py` once the official draw is made (Dec 2025).
+- Model accuracy on 5-fold CV is typically 55–60% for 3-class prediction (home win / draw / away win), which is competitive for football prediction tasks.
