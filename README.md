@@ -20,22 +20,25 @@ An ML-powered full-stack application that predicts all FIFA World Cup 2026 match
 ## 🧠 ML Architecture
 
 ### Algorithms
-- **Random Forest** (300 trees, depth 8)
-- **Gradient Boosting** (200 estimators, LR 0.05)
+- **Random Forest** (200 trees, depth 8)
+- **Gradient Boosting** (100 estimators, LR 0.08)
 - **Logistic Regression** (L2 regularisation)
 - Combined as a **Soft Voting Ensemble** (weights 3:3:1)
 - Output calibrated using **Isotonic Regression** (`CalibratedClassifierCV`)
 
-### Features Used
+### Features Used (34 total)
 | Feature | Source |
 |---|---|
-| Elo rating differential | Computed from all 964 WC matches (1930–2022) |
-| FIFA ranking & points | `fifa_ranking_2022-10-06.csv` |
-| Historical win/draw/loss rates | `matches_1930_2022.csv` |
-| Average goals scored / conceded | Historical match data |
-| Goal difference average | Historical match data |
-| Knockout stage flag | Match metadata |
-| Year (time trend) | Match date |
+| Elo rating differential + absolute ratings | eloratings.net (June 2026) |
+| FIFA ranking + points differential | `fifa_ranking_2026.csv` |
+| Win / draw / loss rates | `international_results.csv` |
+| Form — last 5 and last 10 matches | `international_results.csv` |
+| Average goals scored / conceded | `international_results.csv` |
+| xG averages | `matches_1930_2022.csv` |
+| Penalty conversion rate | `goalscorers.csv` |
+| Shootout win rate | `shootouts.csv` |
+| WC titles + WC finals appearances | `world_cup.csv` |
+| Knockout stage flag + year | Match metadata |
 
 ### Simulation Method
 The tournament simulator runs **Monte-Carlo sampling** (default: 1,000 full tournaments):
