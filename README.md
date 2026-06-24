@@ -1,10 +1,10 @@
-# 🏆 FIFA World Cup 2026 Predictor
+# FIFA World Cup 2026 Predictor
 
 An ML-powered full-stack application that predicts all FIFA World Cup 2026 match outcomes, group standings, and ultimately the champion — with every metric expressed as a percentage.
 
 ---
 
-## 📸 Features
+## Features
 
 | Feature | Description |
 |---|---|
@@ -17,7 +17,7 @@ An ML-powered full-stack application that predicts all FIFA World Cup 2026 match
 
 ---
 
-## 🧠 ML Architecture
+## ML Architecture
 
 ### Algorithms
 - **Random Forest** (200 trees, depth 8)
@@ -49,7 +49,7 @@ The tournament simulator runs **Monte-Carlo sampling** (default: 1,000 full tour
 
 ---
 
-## 🗂️ Project Structure
+## Project Structure
 
 ```
 fifa_predictor/
@@ -92,7 +92,7 @@ fifa_predictor/
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Option 1 — Docker Compose (recommended)
 
@@ -189,7 +189,7 @@ Frontend runs at http://localhost:3000
 
 ---
 
-## 📊 Datasets
+## Datasets
 
 | File | Description | Rows |
 |---|---|---|
@@ -203,7 +203,7 @@ Frontend runs at http://localhost:3000
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Layer | Technology |
 |---|---|
@@ -218,7 +218,7 @@ Frontend runs at http://localhost:3000
 
 ---
 
-## 📝 Notes
+## Notes
 
 - The model is trained on 32,000+ international matches (1990–2026), with Elo computed from the full 49,306 match history (1872–2026).
 - Elo ratings are computed incrementally in chronological order, then overridden with current verified values from eloratings.net (June 2026).
